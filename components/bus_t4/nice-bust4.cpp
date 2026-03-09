@@ -739,7 +739,8 @@ void NiceBusT4::send_array_cmd(const uint8_t *data, size_t len) {
   
   // Ждем окончания отправки break
   uart_wait_tx_empty(_uart);
-  delayMicroseconds(200); // Гарантированная пауза после break
+  // Добавляем дополнительную задержку для надежности
+  delayMicroseconds(200);
   
   // Возвращаем рабочую скорость
   uart_set_baudrate(_uart, BAUD_WORK);
