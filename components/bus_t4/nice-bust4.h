@@ -56,7 +56,14 @@ namespace bus_t4 {
 
 using namespace esphome::cover;
 
-// Тайминги (в микросекундах)
+// Константы UART
+static const int _UART_NO = UART0;
+static const int TX_P = 1;
+static const uint32_t BAUD_BREAK = 9200;
+static const uint32_t BAUD_WORK = 19200;
+static const uint8_t START_CODE = 0x55;
+
+// Тайминги (в миллисекундах/микросекундах)
 static const uint32_t BREAK_TIMEOUT_MS = 5;      // 5 мс таймаут для break
 static const uint32_t DATA_TIMEOUT_MS = 10;      // 10 мс таймаут для данных
 static const uint32_t RESPONSE_TIMEOUT_MS = 100; // 100 мс ожидание ответа
@@ -238,9 +245,9 @@ enum position_hook_type : uint8_t {
 class NiceBusT4 : public Component, public Cover {
  public:
   // Настройки привода
-  bool autocls_flag;
-  bool photocls_flag;
-  bool alwayscls_flag;
+  bool autocls_flag = false;
+  bool photocls_flag = false;
+  bool alwayscls_flag = false;
   bool init_ok = false;
   bool is_walky = false;
   bool is_robus = false;
@@ -296,8 +303,8 @@ class NiceBusT4 : public Component, public Cover {
   uint16_t _pos_usl = 0;
   
   uint8_t addr_from[2] = {0x00, 0x66};
-  uint8_t addr_to[2];
-  uint8_t addr_oxi[2];
+  uint8_t addr_to[2] = {0x00, 0x00};
+  uint8_t addr_oxi[2] = {0x00, 0x00};
 
   std::vector<uint8_t> raw_cmd_prepare(std::string data);
 
