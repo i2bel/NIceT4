@@ -138,46 +138,72 @@ bool NiceBusT4::validate_message_() {
   
   // Ждем полный пакет
   if (len < expected_len) return true;
-  
-  // Проверка CRC1 (XOR байт 3-8)
-  uint8_t crc1 = data[3] ^ data[4] ^ data[5] ^ data[6] ^ data[7] ^ data[8];
-  if (data[9] != crc1) {
-    ESP_LOGW(TAG, "Checksum 1 error: %02X != %02X", data[9], crc1);
-    return false;
-  }
-  
-  // Проверка CRC2 (XOR байт 10 до предпоследнего)
+
+  // Byte 3: Серия (ряд) кому пакет
+  // Проверка не проводится
+  //  uint8_t command = data[3];
+  if (len == 4)
+    return true;
+
+  // Byte 4: Адрес кому пакет
+  // Byte 5: Серия (ряд) от кого пакет
+  // Byte 6: Адрес от кого пакет
+  // Byte 7: Тип сообшения CMD или INF
+  // Byte 8: Количество байт дальше за вычетом двух байт CRC в конце.
+
+  if (len <= 9)
+    // Проверка не проводится
+    return true;
+
+  uint8_t crc1 = (data[3] ^ data[4] ^ data[5] ^ data[6] ^ data[7] ^ data[8]);
+
+  // Byte 9: crc1 = XOR (Byte 3 : Byte 8) XOR шести предыдущих байт
+  if (len == 10)
+    if (data[9] != crc1) {
+      ESP_LOGW(TAG, "Received invalid message checksum 1 %02X!=%02X", data[9], crc1);
+      return false;
+    }
+  // Byte 10:
+  // ...
+
+  // ждем пока поступят все данные пакета
+  if (len < expected_len)
+    return true;
+
+  // считаем crc2
   uint8_t crc2 = data[10];
   for (uint8_t i = 11; i < expected_len - 1; i++) {
-    crc2 ^= data[i];
+    crc2 = (crc2 ^ data[i]);
   }
-  
-  if (data[expected_len - 1] != crc2) {
-    ESP_LOGW(TAG, "Checksum 2 error: %02X != %02X", data[expected_len - 1], crc2);
+
+  if (data[expected_len - 1] != crc2 ) {
+    ESP_LOGW(TAG, "Received invalid message checksum 2 %02X!=%02X", data[expected_len - 1], crc2);
     return false;
   }
-  
-  // Проверка размера в конце пакета
-  if (data[expected_len] != packet_size) {
-    ESP_LOGW(TAG, "Size mismatch: %02X != %02X", data[expected_len], packet_size);
+
+  // Byte Last: packet_size
+  if (data[expected_len] != packet_size ) {
+    ESP_LOGW(TAG, "Received invalid message size %02X!=%02X", data[expected_len], packet_size);
     return false;
   }
-  
-  // Валидное сообщение получено
-  rx_message_.erase(rx_message_.begin()); // Удаляем 0x00 в начале
-  
+
+  // Если сюда дошли - правильное сообщение получено и лежит в буфере rx_message_
+
+  // Удаляем 0x00 в начале сообщения
+  rx_message_.erase(rx_message_.begin());
+
+  // для вывода пакета в лог
   std::string pretty_cmd = format_hex_pretty(rx_message_);
-  ESP_LOGI(TAG, "Получен пакет: %s", pretty_cmd.c_str());
-  
+  ESP_LOGI(TAG,  "Получен пакет: %s ", pretty_cmd.c_str() );
+
+  // здесь что-то делаем с сообщением
   parse_status_packet(rx_message_);
-  
-  return false; // Очищаем буфер
+
+  // возвращаем false чтобы обнулить rx buffer
+  return false;
 }
 
 void NiceBusT4::parse_status_packet(const std::vector<uint8_t> &data) {
-  // Сохраняем всю существующую логику parse_status_packet без изменений
-  // ... (весь существующий код parse_status_packet)
-  
   if ((data[1] == 0x0d) && (data[13] == 0xFD)) {
     ESP_LOGE(TAG, "Команда недоступна для этого устройства");
   }
@@ -705,36 +731,25 @@ void NiceBusT4::send_array_cmd(const uint8_t *data, size_t len) {
   
   // Устанавливаем низкую скорость для break
   uart_set_baudrate(_uart, BAUD_BREAK);
-  delayMicroseconds(50); // Стабилизация скорости
+  delayMicroseconds(50);
   
   // Отправляем 2 байта 0x00 для гарантированного break
   uint8_t break_bytes[2] = {0x00, 0x00};
   uart_write(_uart, (char *)break_bytes, 2);
   
-  // Ждем реального окончания отправки с таймаутом
-  uint32_t timeout = micros() + BREAK_TIMEOUT_US;
-  while (!uart_is_tx_fifo_empty(_uart) && micros() < timeout) {
-    delayMicroseconds(10);
-  }
-  
-  if (micros() >= timeout) {
-    ESP_LOGW(TAG, "Break transmission timeout");
-  }
-  
+  // Ждем окончания отправки break
+  uart_wait_tx_empty(_uart);
   delayMicroseconds(200); // Гарантированная пауза после break
   
   // Возвращаем рабочую скорость
   uart_set_baudrate(_uart, BAUD_WORK);
-  delayMicroseconds(100); // Стабилизация перед данными
+  delayMicroseconds(100);
   
   // Отправляем основные данные
   uart_write(_uart, (char *)data, len);
   
-  // Ждем окончания отправки
-  timeout = micros() + DATA_TIMEOUT_US;
-  while (!uart_is_tx_fifo_empty(_uart) && micros() < timeout) {
-    delayMicroseconds(10);
-  }
+  // Ждем окончания отправки данных
+  uart_wait_tx_empty(_uart);
   
   interrupts();
   
