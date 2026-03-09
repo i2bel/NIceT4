@@ -6,6 +6,45 @@ namespace esphome {
 namespace bus_t4 {
 
 static const char *TAG = "bus_t4.cover";
+#include "nice-bust4.h"
+#include "esphome/core/log.h"
+#include "esphome/core/helpers.h"  // для использования вспомогательных функций
+
+namespace esphome {
+namespace bus_t4 {
+
+static const char *TAG = "bus_t4.cover";
+
+using namespace esphome::cover;
+
+// Определения констант (добавьте это после using namespace)
+const int _UART_NO = UART0;
+const int TX_P = 1;
+const uint32_t BAUD_BREAK = 9200;
+const uint32_t BAUD_WORK = 19200;
+const uint8_t START_CODE = 0x55;
+
+const uint32_t BREAK_TIMEOUT_MS = 5;
+const uint32_t DATA_TIMEOUT_MS = 10;
+const uint32_t RESPONSE_TIMEOUT_MS = 100;
+const uint32_t RETRY_DELAY_MS = 50;
+
+const size_t MAX_RX_BUFFER_SIZE = 128;
+const size_t MAX_PACKET_SIZE = 64;
+const size_t MIN_PACKET_SIZE = 10;
+
+const float CLOSED_POSITION_THRESHOLD = 0.007;
+const uint32_t POSITION_UPDATE_INTERVAL = 500;
+
+CoverTraits NiceBusT4::get_traits() {
+  auto traits = CoverTraits();
+  traits.set_supports_position(true);
+  traits.set_supports_stop(true);
+  return traits;
+}
+
+// ... остальной код без изменений ...
+
 
 using namespace esphome::cover;
 
