@@ -6,14 +6,6 @@ namespace esphome {
 namespace bus_t4 {
 
 static const char *TAG = "bus_t4.cover";
-#include "nice-bust4.h"
-#include "esphome/core/log.h"
-#include "esphome/core/helpers.h"  // для использования вспомогательных функций
-
-namespace esphome {
-namespace bus_t4 {
-
-static const char *TAG = "bus_t4.cover";
 
 using namespace esphome::cover;
 
@@ -42,6 +34,8 @@ CoverTraits NiceBusT4::get_traits() {
   traits.set_supports_stop(true);
   return traits;
 }
+
+
 
 // ... остальной код без изменений ...
 
