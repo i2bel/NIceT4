@@ -51,31 +51,42 @@ BusT4                       ESP8266
 #include "esphome/core/helpers.h"
 #include <queue>
 
-namespace esphome {
-namespace bus_t4 {
+#include "esphome.h"
+#include "esphome/core/component.h"
+#include "esphome/core/automation.h"
+#include "esphome/components/cover/cover.h"
+#include <HardwareSerial.h>
+#include "esphome/core/helpers.h"
+#include <queue>
 
-using namespace esphome::cover;
-
-// Константы UART
+// Константы UART - определяем здесь, вне namespace
 static const int _UART_NO = UART0;
 static const int TX_P = 1;
 static const uint32_t BAUD_BREAK = 9200;
 static const uint32_t BAUD_WORK = 19200;
 static const uint8_t START_CODE = 0x55;
 
-// Тайминги (в миллисекундах/микросекундах)
-static const uint32_t BREAK_TIMEOUT_MS = 5;      // 5 мс таймаут для break
-static const uint32_t DATA_TIMEOUT_MS = 10;      // 10 мс таймаут для данных
-static const uint32_t RESPONSE_TIMEOUT_MS = 100; // 100 мс ожидание ответа
-static const uint32_t RETRY_DELAY_MS = 50;       // Задержка между ретриями
+// Тайминги
+static const uint32_t BREAK_TIMEOUT_MS = 5;
+static const uint32_t DATA_TIMEOUT_MS = 10;
+static const uint32_t RESPONSE_TIMEOUT_MS = 100;
+static const uint32_t RETRY_DELAY_MS = 50;
 
 // Размеры буферов
-static const size_t MAX_RX_BUFFER_SIZE = 128;    // Максимальный размер RX буфера
-static const size_t MAX_PACKET_SIZE = 64;        // Максимальный размер пакета
-static const size_t MIN_PACKET_SIZE = 10;        // Минимальный размер пакета
+static const size_t MAX_RX_BUFFER_SIZE = 128;
+static const size_t MAX_PACKET_SIZE = 64;
+static const size_t MIN_PACKET_SIZE = 10;
 
 static const float CLOSED_POSITION_THRESHOLD = 0.007;
 static const uint32_t POSITION_UPDATE_INTERVAL = 500;
+
+
+
+namespace esphome {
+namespace bus_t4 {
+
+using namespace esphome::cover;
+
 
 enum mes_type : uint8_t {
   CMD = 0x01,
