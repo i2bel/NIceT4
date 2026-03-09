@@ -40,14 +40,7 @@ CoverTraits NiceBusT4::get_traits() {
 // ... остальной код без изменений ...
 
 
-using namespace esphome::cover;
 
-CoverTraits NiceBusT4::get_traits() {
-  auto traits = CoverTraits();
-  traits.set_supports_position(true);
-  traits.set_supports_stop(true);
-  return traits;
-}
 
 void NiceBusT4::control(const CoverCall &call) {
   position_hook_type = IGNORE;
