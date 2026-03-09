@@ -51,14 +51,6 @@ BusT4                       ESP8266
 #include "esphome/core/helpers.h"
 #include <queue>
 
-#include "esphome.h"
-#include "esphome/core/component.h"
-#include "esphome/core/automation.h"
-#include "esphome/components/cover/cover.h"
-#include <HardwareSerial.h>
-#include "esphome/core/helpers.h"
-#include <queue>
-
 // Константы UART - определяем здесь, вне namespace
 static const int _UART_NO = UART0;
 static const int TX_P = 1;
