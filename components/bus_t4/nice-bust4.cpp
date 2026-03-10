@@ -238,7 +238,25 @@ bool NiceBusT4::validate_message_() {                    // проверка п�
 
 // разбираем полученные пакеты
 void NiceBusT4::parse_status_packet (const std::vector<uint8_t> &data) {
-  if ((data[1] == 0x0d) && (data[13] == 0xFD)) { // ошибка
+ // === НОВЫЙ КОД - СЮДА ===
+  if (data.size() > 9 && data[9] == 0x0A) {
+      ESP_LOGI(TAG, "=== ПАКЕТ ОТ ПРИЕМНИКА ===");
+      if (data.size() > 10) ESP_LOGI(TAG, "Команда: 0x%02X", data[10]);
+      if (data.size() > 11) ESP_LOGI(TAG, "Подкоманда: 0x%02X", data[11]);
+      if (data.size() > 14) {
+          std::vector<uint8_t> vec_data;
+          if (data.size() > 14 + 2) {
+              vec_data.assign(data.begin() + 14, data.end() - 2);
+              std::string pretty_data = format_hex_pretty(vec_data);
+              ESP_LOGI(TAG, "Данные (%d байт): %s", vec_data.size(), pretty_data.c_str());
+          }
+      }
+      ESP_LOGI(TAG, "==========================");
+  }
+  // === КОНЕЦ НОВОГО КОДА ===
+	
+	
+	if ((data[1] == 0x0d) && (data[13] == 0xFD)) { // ошибка
     ESP_LOGE(TAG,  "Команда недоступна для этого устройства" );
   }
 
