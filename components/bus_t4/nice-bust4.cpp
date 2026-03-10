@@ -241,35 +241,37 @@ void NiceBusT4::parse_status_packet (const std::vector<uint8_t> &data) {
 
 // === ОБРАБОТКА СОСТОЯНИЯ ФОТОЭЛЕМЕНТОВ ===
 // Проверяем, что это ответ от привода (0x03) к OXI (0x0A) с данными
+// 👇 НОВЫЙ отладочный код (поможет понять, что приходит)
+if (data.size() > 14 && 
+    data[4] == 0x00 && data[5] == 0x03 &&
+    data[2] == 0x00 && data[3] == 0x0A &&
+    data[10] == 0x00 && data[11] == 0x19) {
+    
+    ESP_LOGI(TAG, "=== ФОТО ПАКЕТ ===");
+    ESP_LOGI(TAG, "data[14] = 0x%02X", data[14]);
+    ESP_LOGI(TAG, "data[13] = 0x%02X", data[13]);
+    ESP_LOGI(TAG, "Полный пакет: %s", format_hex_pretty(data).c_str());
+}
 
-	ESP_LOGI(TAG, "Проверка фотоэлементов: size=%d, data[2]=%02X, data[3]=%02X, data[4]=%02X, data[5]=%02X, data[10]=%02X, data[11]=%02X", 
-         data.size(), data[2], data[3], data[4], data[5], data[10], data[11]);
-	
-	if (data.size() > 14 && 
+// 👇 СТАРЫЙ код (печатает статус)
+if (data.size() > 14 && 
     data[4] == 0x00 && data[5] == 0x03 &&  // от привода
     data[2] == 0x00 && data[3] == 0x0A &&  // к OXI
     data[10] == 0x00 && data[11] == 0x19) { // ответ на запрос
     
     uint8_t photo_status = data[14];  // статус фотоэлементов
     
-  //  static uint8_t last_status = 0xFF;
-   // if (photo_status != last_status) {
-        switch(photo_status) {
-            case 0x00:
-                ESP_LOGI(TAG, "Фотоэлементы: СВОБОДНО!");
-                break;
-            case 0x01:
-                ESP_LOGI(TAG, "Фотоэлементы: ПРЕРВАНО!");
-                // Здесь можно добавить действие, например:
-                // this->trigger_photocell_event();
-                break;
-            default:
-                ESP_LOGI(TAG, "Фотоэлементы: статус 0x%02X", photo_status);
-        }
-  //      last_status = photo_status;
-  //  }
+    switch(photo_status) {
+        case 0x00:
+            ESP_LOGI(TAG, "Фотоэлементы: СВОБОДНО!");
+            break;
+        case 0x01:
+            ESP_LOGI(TAG, "Фотоэлементы: ПРЕРВАНО!");
+            break;
+        default:
+            ESP_LOGI(TAG, "Фотоэлементы: статус 0x%02X", photo_status);
+    }
 }
-  // === КОНЕЦ НОВОГО КОДА ===
 	
 	
 	if ((data[1] == 0x0d) && (data[13] == 0xFD)) { // ошибка
