@@ -240,19 +240,16 @@ bool NiceBusT4::validate_message_() {                    // проверка п�
 void NiceBusT4::parse_status_packet (const std::vector<uint8_t> &data) {
 
 // === ОБРАБОТКА СОСТОЯНИЯ ФОТОЭЛЕМЕНТОВ ===
-// Ловим ЛЮБЫЕ пакеты от привода (адрес 0x03)
-if (data.size() > 6 && data[4] == 0x00 && data[5] == 0x03) {
-    ESP_LOGI(TAG, "ПАКЕТ ОТ ПРИВОДА: cmd=%02X subcmd=%02X type=%02X len=%d", 
-             data[9], data[10], data[6], data.size());
-    
-    // Печатаем байты 11-15
-    if (data.size() > 15) {
-        ESP_LOGI(TAG, "data[11]=%02X data[12]=%02X data[13]=%02X data[14]=%02X data[15]=%02X",
-                 data[11], data[12], data[13], data[14], data[15]);
-    }
-    
-    ESP_LOGI(TAG, "Полный пакет: %s", format_hex_pretty(data).c_str());
+// ========== СКАНИРУЕМ ВСЮ ШИНУ ==========
+ESP_LOGI(TAG, "🚨 ПАКЕТ НА ШИНЕ");
+ESP_LOGI(TAG, "Размер: %d байт", data.size());
+ESP_LOGI(TAG, "Сырые данные: %s", format_hex_pretty(data).c_str());
+
+// Печатаем первые 20 байт с индексами (или сколько есть)
+for (int i = 0; i < data.size(); i++) {
+    ESP_LOGI(TAG, "  data[%2d] = 0x%02X", i, data[i]);
 }
+ESP_LOGI(TAG, "=======================");
 	
 	
 	if ((data[1] == 0x0d) && (data[13] == 0xFD)) { // ошибка
