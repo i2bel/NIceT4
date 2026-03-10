@@ -240,25 +240,18 @@ bool NiceBusT4::validate_message_() {                    // проверка п�
 void NiceBusT4::parse_status_packet (const std::vector<uint8_t> &data) {
 
 // === ОБРАБОТКА СОСТОЯНИЯ ФОТОЭЛЕМЕНТОВ ===
-// ВРЕМЕННО: ловим ВСЕ пакеты для OXI
-if (data.size() > 10 && data[2] == 0x00 && data[3] == 0x0A) {
-    ESP_LOGI(TAG, "🔥 ПАКЕТ OXI: cmd=%02X subcmd=%02X len=%d", 
-             data[9], data[10], data.size());
+// Ловим ЛЮБЫЕ пакеты от привода (адрес 0x03)
+if (data.size() > 6 && data[4] == 0x00 && data[5] == 0x03) {
+    ESP_LOGI(TAG, "ПАКЕТ ОТ ПРИВОДА: cmd=%02X subcmd=%02X type=%02X len=%d", 
+             data[9], data[10], data[6], data.size());
     
-    // Печатаем все значимые байты
-    std::string bytes;
-    for (int i = 0; i < data.size(); i++) {
-        char buf[8];
-        sprintf(buf, "%02X ", data[i]);
-        bytes += buf;
-    }
-    ESP_LOGI(TAG, "Полный пакет (%d байт): %s", data.size(), bytes.c_str());
-    
-    // Особенно интересны байты 11-15
+    // Печатаем байты 11-15
     if (data.size() > 15) {
         ESP_LOGI(TAG, "data[11]=%02X data[12]=%02X data[13]=%02X data[14]=%02X data[15]=%02X",
                  data[11], data[12], data[13], data[14], data[15]);
     }
+    
+    ESP_LOGI(TAG, "Полный пакет: %s", format_hex_pretty(data).c_str());
 }
 	
 	
