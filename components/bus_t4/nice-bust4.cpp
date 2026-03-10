@@ -252,8 +252,8 @@ void NiceBusT4::parse_status_packet (const std::vector<uint8_t> &data) {
     
     uint8_t photo_status = data[14];  // статус фотоэлементов
     
-    static uint8_t last_status = 0xFF;
-    if (photo_status != last_status) {
+  //  static uint8_t last_status = 0xFF;
+   // if (photo_status != last_status) {
         switch(photo_status) {
             case 0x00:
                 ESP_LOGI(TAG, "Фотоэлементы: СВОБОДНО!");
@@ -266,8 +266,8 @@ void NiceBusT4::parse_status_packet (const std::vector<uint8_t> &data) {
             default:
                 ESP_LOGI(TAG, "Фотоэлементы: статус 0x%02X", photo_status);
         }
-        last_status = photo_status;
-    }
+  //      last_status = photo_status;
+  //  }
 }
   // === КОНЕЦ НОВОГО КОДА ===
 	
