@@ -241,7 +241,11 @@ void NiceBusT4::parse_status_packet (const std::vector<uint8_t> &data) {
 
 // === ОБРАБОТКА СОСТОЯНИЯ ФОТОЭЛЕМЕНТОВ ===
 // Проверяем, что это ответ от привода (0x03) к OXI (0x0A) с данными
-if (data.size() > 14 && 
+
+	ESP_LOGI(TAG, "Проверка фотоэлементов: size=%d, data[2]=%02X, data[3]=%02X, data[4]=%02X, data[5]=%02X, data[10]=%02X, data[11]=%02X", 
+         data.size(), data[2], data[3], data[4], data[5], data[10], data[11]);
+	
+	if (data.size() > 14 && 
     data[4] == 0x00 && data[5] == 0x03 &&  // от привода
     data[2] == 0x00 && data[3] == 0x0A &&  // к OXI
     data[10] == 0x00 && data[11] == 0x19) { // ответ на запрос
